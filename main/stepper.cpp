@@ -12,6 +12,10 @@
 
 static const char* TAG = "Stepper";
 
+static const gpio_num_t DIR_PIN = GPIO_NUM_14;
+static const gpio_num_t STP_PIN = GPIO_NUM_32;
+static const gpio_num_t SLP_PIN = GPIO_NUM_15;
+
 static void stepperTimerCallback(void* arg) {
   // Wake task
   xTaskNotifyGive(arg);
@@ -19,7 +23,7 @@ static void stepperTimerCallback(void* arg) {
 
 void stepperTask(void* params) {
   auto messageQueue = static_cast<Queue<StepperMessage>*>(params);
-  bool level = 0;
+  bool level = false;
   TaskHandle_t myHandle = xTaskGetCurrentTaskHandle();
 
   const esp_timer_create_args_t timerArgs = {.callback = &stepperTimerCallback,
@@ -33,6 +37,17 @@ void stepperTask(void* params) {
   uint64_t lastTime = esp_timer_get_time();
   ESP_ERROR_CHECK(esp_timer_start_once(stepperTimer, state.getNextTimeout(0)));
   uint64_t stepTime = lastTime + state.getNextTimeout(0);
+  bool dirPin = false;
+  bool sleepPin = true;
+
+  gpio_reset_pin(DIR_PIN);
+  gpio_set_direction(DIR_PIN, GPIO_MODE_OUTPUT);
+  gpio_reset_pin(SLP_PIN);
+  gpio_set_direction(SLP_PIN, GPIO_MODE_OUTPUT);
+  gpio_reset_pin(STP_PIN);
+  gpio_set_direction(STP_PIN, GPIO_MODE_OUTPUT);
+
+  gpio_set_level(SLP_PIN, sleepPin);
 
   for (;;) {
     while (messageQueue->messagesWaiting()) {
@@ -41,15 +56,12 @@ void stepperTask(void* params) {
         break;
       switch (message->inst) {
         case StepperInstruction::SetSpeed:
-          ESP_LOGI(TAG, "Set speed %f", message->fVal);
           state.setSpeed(message->fVal);
           break;
         case StepperInstruction::SetAccelleration:
-          ESP_LOGI(TAG, "Set accelleration %f", message->fVal);
           state.setAccelleration(message->fVal);
           break;
         case StepperInstruction::SetDirection:
-          ESP_LOGI(TAG, "Set direction %d", message->iVal);
           state.setDirection(message->iVal);
           break;
 
@@ -58,14 +70,25 @@ void stepperTask(void* params) {
       }
     }
 
+    bool didstep = false;
+
     // Wait for the timer to expire
     ulTaskNotifyTake(pdTRUE, pdMS_TO_TICKS(100));
     uint64_t currentTime = esp_timer_get_time();
     if (currentTime >= stepTime) {
-      gpio_set_level(GPIO_NUM_13, level);
-      level = !level;
-      // Update last step time to now
-      lastTime = currentTime;
+      if (dirPin != state.direction()) {
+        dirPin = !dirPin;
+        gpio_set_level(DIR_PIN, dirPin);
+      }
+
+      if (sleepPin == state.sleep()) {
+        sleepPin = !sleepPin;
+        gpio_set_level(SLP_PIN, sleepPin);
+      } else {
+        gpio_set_level(STP_PIN, level);
+        level = !level;
+      }
+      didstep = true;
     } else {
       // Timer hasn't triggered yet
       ESP_ERROR_CHECK(esp_timer_stop(stepperTimer));
@@ -75,8 +98,10 @@ void stepperTask(void* params) {
     stepTime = lastTime + state.getNextTimeout(currentTime - lastTime);
     ESP_ERROR_CHECK(esp_timer_start_once(stepperTimer, stepTime - currentTime));
 
-    printf("%lld, %lld, %lld, %f\n", currentTime, lastTime, stepTime,
-           1000000.f / (stepTime - lastTime));
+    if (didstep) {
+      // Update last step time to now
+      lastTime = currentTime;
+    }
   }
 
   vTaskDelete(NULL);
@@ -101,7 +126,7 @@ void StepperState::setDirection(int32_t dir) {
 }
 
 int8_t StepperState::direction() const {
-  return m_direction;
+  return m_currentVelocity > 0;
 }
 
 void StepperState::setJerk(float jerk) {
@@ -136,6 +161,10 @@ uint64_t StepperState::getNextTimeout(uint64_t deltaT) {
     return m_currentVelocity < 0 ? 1000000ULL / -m_currentVelocity
                                  : 1000000ULL / m_currentVelocity;
   }
+}
+
+bool StepperState::sleep() const {
+  return m_direction == 0 && fabs(m_currentVelocity) < 0.001;
 }
 
 StepperController::StepperController(Queue<StepperMessage>* messageQueue)

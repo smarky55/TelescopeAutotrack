@@ -39,6 +39,8 @@ class StepperState {
 
   uint64_t getNextTimeout(uint64_t deltaT);
 
+  bool sleep() const;
+
  private:
   float m_targetSpeed;      // Steps per s
   float m_currentVelocity;  // Steps per s
