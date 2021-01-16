@@ -1,0 +1,12 @@
+{
+    "files.associations": {
+        "*.h": "c",
+        "*.cps": "javascript",
+        "stdio.h": "c",
+        "esp_spi_flash.h": "c",
+        "optional": "cpp"
+    },
+    "idf.portWin": "COM3",
+    "idf.flashType": "UART"
+    //"terminal.integrated.shell.windows":"C:\\WINDOWS\\System32\\cmd.exe"
+}
