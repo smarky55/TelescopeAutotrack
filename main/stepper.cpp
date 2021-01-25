@@ -38,7 +38,7 @@ void stepperTask(void* params) {
   ESP_ERROR_CHECK(esp_timer_start_once(stepperTimer, state.getNextTimeout(0)));
   uint64_t stepTime = lastTime + state.getNextTimeout(0);
   bool dirPin = false;
-  bool sleepPin = true;
+  bool sleepPin = false;
 
   gpio_reset_pin(DIR_PIN);
   gpio_set_direction(DIR_PIN, GPIO_MODE_OUTPUT);
@@ -158,8 +158,8 @@ uint64_t StepperState::getNextTimeout(uint64_t deltaT) {
   if (fabs(m_currentVelocity) < 0.1f) {
     return 10000000;
   } else {
-    return m_currentVelocity < 0 ? 1000000ULL / -m_currentVelocity
-                                 : 1000000ULL / m_currentVelocity;
+    return m_currentVelocity < 0 ? 500000ULL / -m_currentVelocity
+                                 : 500000ULL / m_currentVelocity;
   }
 }
 

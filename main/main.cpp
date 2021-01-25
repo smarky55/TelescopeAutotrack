@@ -1,12 +1,15 @@
+#include <esp_netif.h>
 #include <stdio.h>
 #include "driver/gpio.h"
 #include "esp_log.h"
 #include "esp_timer.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
+#include "nvs_flash.h"
 #include "sdkconfig.h"
 
 #include "Queue.hpp"
+#include "smk_wifi.hpp"
 #include "stepper.hpp"
 
 #define MILLIS 1000
@@ -22,21 +25,34 @@ void my_main(void) {
 
   Queue<StepperMessage> queue(10);
   TaskHandle_t task;
-  xTaskCreate(&stepperTask, "stepper", 2048, &queue, tskIDLE_PRIORITY + 1,
-              &task);
   StepperController controller(&queue);
-;
+
   controller.setDirection(0);
-  controller.setSpeed(5*200*32);
-  controller.setAccelleration(100*32);
+  controller.setSpeed(1 * 200 * 32);
+  controller.setAccelleration(100 * 32);
   controller.setJerk(20);
 
-  while (1) {
-    controller.setDirection(1);
-    vTaskDelay(20000 / portTICK_PERIOD_MS);
+  vTaskDelay(pdMS_TO_TICKS(50));
 
-    controller.setDirection(-1);
-    vTaskDelay(20000 / portTICK_PERIOD_MS);
+  // Initialize NVS
+  esp_err_t ret = nvs_flash_init();
+  if (ret == ESP_ERR_NVS_NO_FREE_PAGES ||
+      ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
+    ESP_ERROR_CHECK(nvs_flash_erase());
+    ret = nvs_flash_init();
+  }
+  ESP_ERROR_CHECK(ret);
+
+  vTaskDelay(pdMS_TO_TICKS(50));
+
+  wifi_init_sta();
+
+
+  xTaskCreatePinnedToCore(&stepperTask, "stepper", 4096, &queue,
+                          tskIDLE_PRIORITY + 1, &task, 1);
+
+  while (1) {
+    vTaskDelay(pdMS_TO_TICKS(1000));
   }
 }
 
