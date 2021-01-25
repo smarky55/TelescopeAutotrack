@@ -1,0 +1,3 @@
+[submodule "components/TMCStepper"]
+	path = components/TMCStepper
+	url = https://github.com/smarky55/TMCStepper.git
