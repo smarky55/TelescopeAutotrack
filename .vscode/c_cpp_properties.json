@@ -5,6 +5,7 @@
             "includePath": [
                 "${workspaceRoot}",
                 "${workspaceRoot}/components/smk_wifi/include",
+                "${workspaceRoot}/components/TMCStepper/src",
                 "${workspaceRoot}/build",
                 "${workspaceRoot}/build/config",
                 //"${workspaceRoot}/build/include",
@@ -288,7 +289,8 @@
                 "databaseFilename": "${workspaceRoot}/.vscode/browse.vc.db"
             },
             "cStandard": "c11",
-            "cppStandard": "c++17"
+            "cppStandard": "c++17",
+            "defines": ["ESP_PLATFORM"]
         }
     ],
     "version": 4

@@ -1,6 +1,7 @@
 #ifndef __UART_H__
 #define __UART_H__
 
+#include <stdint.h>
 #include <vector>
 
 namespace UART {
@@ -58,8 +59,12 @@ class UARTDriver {
 
   void remove();
 
-  void sendBytes(const std::vector<uint8_t>& data);
+  size_t available();
 
+  size_t sendByte(uint8_t data);
+  size_t sendBytes(const std::vector<uint8_t>& data);
+
+  uint8_t receiveByte();
   void receiveBytes(std::vector<uint8_t>& data);
 
  private:

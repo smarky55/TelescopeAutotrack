@@ -87,20 +87,35 @@ void UARTDriver::remove() {
   }
 }
 
-void UARTDriver::sendBytes(const std::vector<uint8_t>& data) 
+size_t UARTDriver::available() 
 {
-  uart_write_bytes(getImplPort(), (char*)(data.data()), data.size());
+  size_t ret = 0;
+  ESP_ERROR_CHECK(uart_get_buffered_data_len(getImplPort(), &ret));
+  return ret;
 }
 
-void UARTDriver::receiveBytes(std::vector<uint8_t>& data) 
-{
+size_t UARTDriver::sendByte(uint8_t data) {
+  return uart_write_bytes(getImplPort(), (char*)&data, 1);
+}
+
+size_t UARTDriver::sendBytes(const std::vector<uint8_t>& data) {
+  return uart_write_bytes(getImplPort(), (char*)(data.data()), data.size());
+}
+
+uint8_t UARTDriver::receiveByte() {
+  uint8_t ret;
+  uart_read_bytes(getImplPort(), &ret, 1, 100);
+  return ret;
+}
+
+void UARTDriver::receiveBytes(std::vector<uint8_t>& data) {
   size_t length = 0;
   ESP_ERROR_CHECK(uart_get_buffered_data_len(getImplPort(), &length));
   data.resize(length);
   uart_read_bytes(getImplPort(), data.data(), length, 100);
 }
 
-int UARTDriver::getImplPort() const {
+constexpr int UARTDriver::getImplPort() const {
   switch (m_port) {
     case Port::Port0:
       return UART_NUM_0;
