@@ -1,0 +1,26 @@
+body {
+  font-family: Verdana, Geneva, Tahoma, sans-serif;
+}
+
+h1{
+  color: darkgray;
+}
+
+.buttonBox {
+  display: flex;
+  justify-content: space-between;
+}
+
+.moveButton{
+  background-color: palegreen;
+  width: 32%;
+  height: 75px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+#stop{
+  background-color: maroon;
+  color: white;
+}
