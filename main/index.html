@@ -2,21 +2,25 @@
 <html>
 
 <head>
+  <meta charset="utf-8" />
+  <title>Telescope</title>
   <link rel="stylesheet" href="core.css" />
   <script src="scope.js"></script>
 </head>
 
 <body>
-  <div class="buttonBox">
-    <div id="left" class="moveButton" onclick="buttonClick(this)">Left</div>
-    <div id="track" class="moveButton" onclick="buttonClick(this)">Track</div>
-    <div id="right" class="moveButton" onclick="buttonClick(this)">Right</div>
+  <div class="slidecontainer">
+    <div class="slider" id="slider"><div class="slideHandle"></div></div>
   </div>
   <div class="buttonBox">
     <div></div>
+    <input type="number" autocomplete="off"></input>
+    <div id="track" class="moveButton" onclick="buttonClick(this)">Track</div>
     <div id="stop" class="moveButton" onclick="buttonClick(this)">Stop</div>
     <div></div>
   </div>
+
+  <div id="output">50</div>
 </body>
 
 </html>
