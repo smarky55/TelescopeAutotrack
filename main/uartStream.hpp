@@ -13,10 +13,11 @@ class UARTStream : public Stream {
 
   int available() override;
   uint8_t write(const uint8_t data) override;
-  uint8_t read() override;
+  int16_t read() override;
 
-  private:
+ private:
   UARTDriver* m_driver;
+  int m_ignoreBytes= 0;
 };
 }  // namespace UART
 

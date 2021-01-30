@@ -31,7 +31,7 @@ struct Config {
   Parity parity = Parity::Disable;
   StopBits stopBits = StopBits::Bits_1;
   FlowControl flowControl = FlowControl::Disable;
-  int flowCtrlRxThresh = 0;
+  int flowCtrlRxThresh = 122;
   ClockSource clockSource = ClockSource::APB;
   int txBufferSize = 2048;
   int rxBufferSize = 2048;
@@ -41,6 +41,8 @@ class UARTDriver {
  public:
   UARTDriver(Port port, const Config& config);
   virtual ~UARTDriver();
+
+  void setHalfDuplex();
 
   void setBaudRate(int baud);
 
@@ -64,8 +66,10 @@ class UARTDriver {
   size_t sendByte(uint8_t data);
   size_t sendBytes(const std::vector<uint8_t>& data);
 
-  uint8_t receiveByte();
-  void receiveBytes(std::vector<uint8_t>& data);
+  int receiveByte(uint32_t timeout = 0);
+  int receiveBytes(std::vector<uint8_t>& data, uint32_t timeout = 0);
+
+  void flushRxBuffer();
 
  private:
   const Port m_port;
