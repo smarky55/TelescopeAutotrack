@@ -5,6 +5,7 @@ function panControl(id, onUpdate) {
   var rangeWidth = range.offsetWidth;
   var rangeLeft = range.offsetWidth;
   var handleWidth = handle.offsetWidth;
+  var value
 
   range.addEventListener("mousedown", function (e) {
     rangeWidth = this.offsetWidth;
@@ -25,16 +26,40 @@ function panControl(id, onUpdate) {
     down = false;
   })
 
+  range.addEventListener("touchstart", function (e) {
+    rangeWidth = this.offsetWidth;
+    rangeLeft = this.offsetLeft;
+    down = true;
+    updateHandle(e.changedTouches[0]);
+    e.preventDefault();
+    return false;
+  });
+
+  document.addEventListener("touchmove", function (e) {
+    e.preventDefault()
+    updateHandle(e.changedTouches[0]);
+  })
+
+  document.addEventListener("touchend", function () {
+    resetHandle();
+    down = false;
+  })
+
   function updateHandle(e) {
     if (down) {
       handle.style.left = Math.max(Math.min(e.pageX - rangeLeft - handleWidth / 2, rangeWidth - handleWidth), 0) + "px";
-      if (typeof onUpdate == "function") onUpdate(Math.round(((e.pageX - rangeLeft) / rangeWidth) * 100));
+      let newValue = Math.round(((e.pageX - rangeLeft) / rangeWidth) * 100);
+      if (typeof onUpdate == "function" && newValue != value) {
+        value = newValue;
+        onUpdate(value);
+      }
     }
   }
 
   function resetHandle() {
     handle.style.left = ((rangeWidth - handleWidth) / 2) + "px";
     if (down && typeof onUpdate == "function") {
+      value = 50;
       onUpdate(50);
     }
   }
@@ -65,7 +90,7 @@ window.onload = function () {
 }
 
 function buttonClick(element) {
-  const data = { button: element.id };
+  const data = { command: element.id };
   fetch("/command", {
     method: "POST",
     headers: {

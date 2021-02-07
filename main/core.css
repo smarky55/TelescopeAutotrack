@@ -15,7 +15,7 @@ h1 {
 .moveButton {
   background-color: palegreen;
   width: 32%;
-  height: 75px;
+  height: 200px;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -33,7 +33,7 @@ h1 {
 .slider {
   -webkit-appearance: none;
   width: 100%;
-  height: 50px;
+  height: 100px;
   background: #d3d3d3;
   outline: none;
   opacity: 0.7;
@@ -47,12 +47,12 @@ h1 {
 }
 
 .slider .slideHandle {
-  width: 46px;
-  height: 46px;
+  width: 95px;
+  height: 95px;
   background: #4CAF50;
-  border-radius: 4px;
+  border-radius: 10px;
   border-color: #347937;
-  border-width: 2px;
+  border-width: 2.5px;
   border-style: solid;
   cursor: pointer;
   position:relative;
