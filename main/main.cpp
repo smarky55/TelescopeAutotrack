@@ -12,6 +12,7 @@
 #include "Queue.hpp"
 #include "smk_wifi.hpp"
 #include "stepper.hpp"
+#include "telescope.hpp"
 #include "webserver.hpp"
 
 #include "TMCStepper.h"
@@ -42,19 +43,16 @@ static void uart_printer(void*) {
   }
 }
 
+static void tmcStepperTask(void* arg) {
+  Telescope* scope = static_cast<Telescope*>(arg);
+  scope->tick();  // Get the first dud out the way
+  while (1) {
+    vTaskDelay(100);
+    scope->tick();
+  }
+}
+
 void my_main(void) {
-  /*gpio_reset_pin(BLINK_GPIO);
-  gpio_set_direction(BLINK_GPIO, GPIO_MODE_OUTPUT);
-
-  Queue<StepperMessage> queue(10);
-  TaskHandle_t task;
-  StepperController controller(&queue);
-
-  controller.setDirection(0);
-  controller.setSpeed(100);
-  controller.setAccelleration(100 * 32);
-  controller.setJerk(20);
-
   vTaskDelay(pdMS_TO_TICKS(50));
 
   // Initialize NVS
@@ -79,7 +77,41 @@ void my_main(void) {
 
   server = webserverStart();
 
-  webserverSetCommandCallback([&controller](httpd_req_t* request) {
+  // xTaskCreatePinnedToCore(&stepperTask, "stepper", 4096, &queue,
+  //                         tskIDLE_PRIORITY + 1, &task, 1);
+
+  UART::Config uartConf;
+  uartConf.txPin = 32;
+  uartConf.rxPin = 33;
+  uartConf.baud = 9600;
+  uartConf.stopBits = UART::StopBits::Bits_1;
+
+  UART::UARTDriver driver(UART::Port::Port2, uartConf);
+  UART::UARTStream stream(&driver);
+  TMC2209Stepper stepper(&stream, 0.11, 0);
+
+  // xTaskCreate(uart_printer, "uart_echo", 2048, nullptr, 10, nullptr);
+  vTaskDelay(100);
+  stepper.defaults();
+  stepper.begin();
+  stepper.microsteps(256);
+  stepper.rms_current(800, 0.1f);
+  stepper.TPOWERDOWN(20);
+  stepper.TPWMTHRS(0);
+  stepper.freewheel(1);
+  ESP_LOGI(TAG, "TMC2209 version: %d", stepper.version());
+
+  stepper.VACTUAL(0);
+  vTaskDelay(1000);
+  stepper.VACTUAL(10000);
+  vTaskDelay(2000);
+  stepper.VACTUAL(0);
+  vTaskDelay(2000);
+
+  Telescope scope(&stepper, 1);
+  xTaskCreate(tmcStepperTask, "telescopeTask", 2048, &scope, 10, nullptr);
+
+  webserverSetCommandCallback([&scope](httpd_req_t* request) {
     char buf[100];
     int ret, remaining = request->content_len;
 
@@ -97,23 +129,22 @@ void my_main(void) {
       return httpd_resp_send_err(request, HTTPD_400_BAD_REQUEST, NULL);
     }
 
-    cJSON* button = cJSON_GetObjectItem(json, "button");
-    if (!button) {
+    cJSON* command = cJSON_GetObjectItem(json, "command");
+    if (!command) {
       return httpd_resp_send_err(request, HTTPD_400_BAD_REQUEST, NULL);
     }
-    ESP_LOGI(TAG, "Button %s", button->valuestring);
-    if (strcmp(button->valuestring, "left") == 0) {
-      controller.setDirection(-1);
-      controller.setSpeed(1 * 200 * 32);
-    } else if (strcmp(button->valuestring, "track") == 0) {
-      controller.setDirection(1);
-      controller.setSpeed(21.3*0.5);
-    } else if (strcmp(button->valuestring, "right") == 0) {
-      controller.setDirection(1);
-      controller.setSpeed(1 * 200 * 32);
-    } else if (strcmp(button->valuestring, "stop") == 0) {
-      controller.setDirection(0);
-      controller.setSpeed(0);
+    ESP_LOGI(TAG, "Command %s", command->valuestring);
+    if (strcmp(command->valuestring, "track") == 0) {
+      scope.setTracking(true);
+    } else if (strcmp(command->valuestring, "stop") == 0) {
+      scope.setTracking(false);
+      scope.setTargetRASpeed(0);
+    } else if (strcmp(command->valuestring, "speed") == 0) {
+      cJSON* value = cJSON_GetObjectItem(json, "value");
+      if (!value){
+        return httpd_resp_send_err(request, HTTPD_400_BAD_REQUEST, NULL);
+      }
+      scope.setTargetRASpeed(value->valueint * 0.01); // Range -1 <-> 1
     } else {
       return httpd_resp_send_err(request, HTTPD_400_BAD_REQUEST, NULL);
     }
@@ -121,59 +152,8 @@ void my_main(void) {
     return httpd_resp_send(request, nullptr, 0);
   });
 
-  xTaskCreatePinnedToCore(&stepperTask, "stepper", 4096, &queue,
-                          tskIDLE_PRIORITY + 1, &task, 1);
-  */
-
-  UART::Config uartConf;
-  uartConf.txPin = 15;
-  uartConf.rxPin = 33;
-  uartConf.baud = 9600;
-  uartConf.stopBits = UART::StopBits::Bits_1;
-
-  UART::UARTDriver driver(UART::Port::Port2, uartConf);
-  UART::UARTStream stream(&driver);
-  TMC2209Stepper stepper(&stream, 0.11, 0);
-
-  xTaskCreate(uart_printer, "uart_echo", 2048, nullptr, 10, nullptr);
-  vTaskDelay(100);
-  stepper.defaults();
-  stepper.begin();
-  stepper.microsteps(256);
-  stepper.rms_current(980, 0.1f);
-  stepper.TPOWERDOWN(20);
-  stepper.TPWMTHRS(0);
-  stepper.freewheel(1);
-  ESP_LOGI(TAG, "TMC2209 version: %d", stepper.version());
-  vTaskDelay(200);
-  int VACTUAL = 71583;
-
-  float rampUp[] = {0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9};
-  float rampDown[] = {0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1};
-
   while (1) {
-    for (int i : rampUp) {
-      stepper.VACTUAL(VACTUAL * i);
-      vTaskDelay(100);
-    }
-    stepper.VACTUAL(VACTUAL);
     vTaskDelay(5000);
-    for (int i : rampDown) {
-      stepper.VACTUAL(VACTUAL * i);
-      vTaskDelay(100);
-    }
-    stepper.VACTUAL(0);
-    vTaskDelay(5000);
-    for (int i : rampUp) {
-      stepper.VACTUAL(-VACTUAL * i);
-      vTaskDelay(100);
-    }
-    stepper.VACTUAL(-VACTUAL);
-    vTaskDelay(5000);
-    for (int i : rampDown) {
-      stepper.VACTUAL(-VACTUAL * i);
-      vTaskDelay(100);
-    }
   }
 }
 
