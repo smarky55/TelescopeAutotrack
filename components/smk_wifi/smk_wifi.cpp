@@ -10,8 +10,8 @@
 
 #include <cstring>
 
-#define EXAMPLE_ESP_WIFI_SSID "VM8539324"//"OnePlus 5T"//
-#define EXAMPLE_ESP_WIFI_PASS "***REMOVED***"//"***REMOVED***"//
+#define EXAMPLE_ESP_WIFI_SSID      CONFIG_ESP_WIFI_SSID
+#define EXAMPLE_ESP_WIFI_PASS      CONFIG_ESP_WIFI_PASSWORD
 #define EXAMPLE_ESP_MAXIMUM_RETRY CONFIG_ESP_MAXIMUM_RETRY
 
 static EventGroupHandle_t s_wifiEventGroup;
