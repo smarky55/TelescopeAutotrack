@@ -13,6 +13,7 @@ class Telescope {
   void setTargetRASpeed(double degsPerSecond);
 
   void setTracking(bool tracking);
+  void setTrackRate(int64_t trackRate);
 
   void tick();
 
@@ -21,6 +22,7 @@ class Telescope {
   int64_t m_raAccelleration;
   int64_t m_targetRAVelocity = 0;
   int64_t m_currentRAVelocity = 0;
+  int64_t m_trackRate = 4167;
   bool m_tracking = false;
 };
 

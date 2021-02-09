@@ -26,6 +26,10 @@ void Telescope::setTracking(bool tracking) {
   m_tracking = tracking;
 }
 
+void Telescope::setTrackRate(int64_t trackRate) {
+  m_trackRate = trackRate;
+}
+
 void Telescope::tick() {
   static int64_t lastTime = esp_timer_get_time();
   int64_t currentTime = esp_timer_get_time();
@@ -39,8 +43,7 @@ void Telescope::tick() {
 
   int64_t targetV = m_targetRAVelocity;
   if (m_tracking && m_targetRAVelocity == 0) {
-    constexpr int64_t trackSpeed = 0.004166667 * SecToUS;
-    targetV = trackSpeed;
+    targetV = m_trackRate;
   }
 
   if (m_currentRAVelocity == targetV) {

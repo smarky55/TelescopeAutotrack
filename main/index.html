@@ -10,11 +10,17 @@
 
 <body>
   <div class="slidecontainer">
-    <div class="slider" id="slider"><div class="slideHandle"></div></div>
+    <div class="slider" id="slider">
+      <div class="slideHandle"></div>
+    </div>
   </div>
   <div class="buttonBox">
     <div></div>
-    <input type="number" autocomplete="off"></input>
+    <div>
+      <label for="trackRate">Tracking Rate</label>
+      <input type="number" autocomplete="off" id="trackRate" value="4167"></input>
+      <button onclick="updateFields()">Update</button>
+    </div>
     <div id="track" class="moveButton" onclick="buttonClick(this)">Track</div>
     <div id="stop" class="moveButton" onclick="buttonClick(this)">Stop</div>
     <div></div>

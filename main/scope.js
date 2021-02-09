@@ -29,9 +29,14 @@ function panControl(id, onUpdate) {
   range.addEventListener("touchstart", function (e) {
     rangeWidth = this.offsetWidth;
     rangeLeft = this.offsetLeft;
-    down = true;
-    updateHandle(e.changedTouches[0]);
-    e.preventDefault();
+    let rangeHeight = this.offsetHeight;
+    let rangeTop = this.offsetTop;
+    if (rangeLeft < e.changedTouches[0].pageX && rangeLeft + rangeWidth > e.changedTouches[0].pageX
+      && rangeTop < e.changedTouches[0].pageY && rangeTop + rangeHeight > e.changedTouches[0].pageY) {
+      down = true;
+      updateHandle(e.changedTouches[0]);
+      e.preventDefault();
+    }
     return false;
   });
 
@@ -97,5 +102,22 @@ function buttonClick(element) {
       "Content-Type": "application/json",
     },
     body: JSON.stringify(data)
-  })
+  });
+}
+
+function updateFields() {
+  var trackRateInp = document.getElementById("trackRate");
+  if (trackRateInp) {
+    const data = {
+      command: "update",
+      trackRate: trackRateInp.valueAsNumber
+    };
+    fetch("/command", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data)
+    });
+  }
 }

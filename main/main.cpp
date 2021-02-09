@@ -141,10 +141,16 @@ void my_main(void) {
       scope.setTargetRASpeed(0);
     } else if (strcmp(command->valuestring, "speed") == 0) {
       cJSON* value = cJSON_GetObjectItem(json, "value");
-      if (!value){
+      if (!value) {
         return httpd_resp_send_err(request, HTTPD_400_BAD_REQUEST, NULL);
       }
-      scope.setTargetRASpeed(value->valueint * 0.01); // Range -1 <-> 1
+      scope.setTargetRASpeed(value->valueint * 0.01);  // Range -1 <-> 1
+    } else if (strcmp(command->valuestring, "update") == 0) {
+      cJSON* trackRate = cJSON_GetObjectItem(json, "trackRate");
+      if (!trackRate) {
+        return httpd_resp_send_err(request, HTTPD_400_BAD_REQUEST, NULL);
+      }
+      scope.setTrackRate(trackRate->valueint);
     } else {
       return httpd_resp_send_err(request, HTTPD_400_BAD_REQUEST, NULL);
     }
