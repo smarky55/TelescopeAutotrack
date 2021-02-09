@@ -10,7 +10,7 @@
 
 #include "Queue.hpp"
 
-static const char* TAG = "Stepper";
+// static const char* TAG = "Stepper";
 
 static const gpio_num_t DIR_PIN = GPIO_NUM_14;
 static const gpio_num_t STP_PIN = GPIO_NUM_32;

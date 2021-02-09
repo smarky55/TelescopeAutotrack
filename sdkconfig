@@ -123,9 +123,23 @@ CONFIG_PARTITION_TABLE_MD5=y
 #
 # Example Configuration
 #
+
+#
+# Station
+#
 CONFIG_ESP_WIFI_SSID="ssid"
 CONFIG_ESP_WIFI_PASSWORD="pswd"
 CONFIG_ESP_MAXIMUM_RETRY=5
+# end of Station
+
+#
+# Access Point
+#
+CONFIG_ESP_WIFI_AP_SSID="TelescopeAP"
+CONFIG_ESP_WIFI_AP_PASSWORD="12345678"
+CONFIG_ESP_WIFI_AP_CHANNEL=6
+CONFIG_ESP_MAX_STA_CONN=5
+# end of Access Point
 # end of Example Configuration
 
 #

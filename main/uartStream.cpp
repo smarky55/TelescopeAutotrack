@@ -5,7 +5,7 @@
 #include <cstdio>
 #include <esp_log.h>
 
-static const char* TAG = "UART";
+// static const char* TAG = "UART";
 
 using namespace UART;
 

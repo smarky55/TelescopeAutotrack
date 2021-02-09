@@ -3,4 +3,6 @@
 
 void wifi_init_sta();
 
+void wifi_init_softap();
+
 #endif // __SMK_WIFI_H__

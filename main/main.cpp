@@ -26,22 +26,22 @@ constexpr gpio_num_t BLINK_GPIO = GPIO_NUM_13;
 
 static const char* TAG = "telescope";
 
-static void uart_printer(void*) {
-  UART::Config uartConf;
-  uartConf.txPin = 17;
-  uartConf.rxPin = 16;
-  uartConf.baud = 9600;
-  uartConf.stopBits = UART::StopBits::Bits_1;
+// static void uart_printer(void*) {
+//   UART::Config uartConf;
+//   uartConf.txPin = 17;
+//   uartConf.rxPin = 16;
+//   uartConf.baud = 9600;
+//   uartConf.stopBits = UART::StopBits::Bits_1;
 
-  UART::UARTDriver driver(UART::Port::Port1, uartConf);
-  while (1) {
-    if (driver.available()) {
-      ESP_LOGI(TAG, "Echo: %x", driver.receiveByte());
-    } else {
-      vTaskDelay(50);
-    }
-  }
-}
+//   UART::UARTDriver driver(UART::Port::Port1, uartConf);
+//   while (1) {
+//     if (driver.available()) {
+//       ESP_LOGI(TAG, "Echo: %x", driver.receiveByte());
+//     } else {
+//       vTaskDelay(50);
+//     }
+//   }
+// }
 
 static void tmcStepperTask(void* arg) {
   Telescope* scope = static_cast<Telescope*>(arg);
@@ -66,7 +66,7 @@ void my_main(void) {
 
   vTaskDelay(pdMS_TO_TICKS(50));
 
-  wifi_init_sta();
+  wifi_init_softap();
 
   httpd_handle_t server = nullptr;
   ESP_ERROR_CHECK(esp_event_handler_register(
