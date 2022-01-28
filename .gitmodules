@@ -1,3 +1,6 @@
 [submodule "components/TMCStepper"]
 	path = components/TMCStepper
 	url = https://github.com/smarky55/TMCStepper.git
+[submodule "components/esp-nimble-cpp"]
+	path = components/esp-nimble-cpp
+	url = https://github.com/smarky55/esp-nimble-cpp.git
