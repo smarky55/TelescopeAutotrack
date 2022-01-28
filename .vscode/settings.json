@@ -51,6 +51,7 @@
         "typeinfo": "cpp"
     },
     "idf.portWin": "COM3",
-    "idf.flashType": "UART"
+    "idf.flashType": "UART",
+    "idf.adapterTargetName": "esp32"
     //"terminal.integrated.shell.windows":"C:\\WINDOWS\\System32\\cmd.exe"
 }

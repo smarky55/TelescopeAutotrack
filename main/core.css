@@ -1,5 +1,7 @@
 body {
   font-family: Verdana, Geneva, Tahoma, sans-serif;
+  background-color: black;
+  color:white;
 }
 
 h1 {
@@ -13,16 +15,22 @@ h1 {
 }
 
 .moveButton {
-  background-color: palegreen;
+  background-color: #347937;
+  border-radius: 10px;
+  border-color: #4CAF50;
+  border-width: 2.5px;
+  border-style: solid;
   width: 32%;
   height: 200px;
   display: flex;
   justify-content: center;
   align-items: center;
+  color: white;
 }
 
 #stop {
   background-color: maroon;
+  border-color: rgb(167, 0, 0);
   color: white;
 }
 
@@ -34,9 +42,9 @@ h1 {
   -webkit-appearance: none;
   width: 100%;
   height: 100px;
-  background: #d3d3d3;
+  background: #333333;
   outline: none;
-  opacity: 0.7;
+  opacity: 0.75;
   -webkit-transition: .2s;
   transition: opacity .2s;
   border-radius: 4px;
@@ -49,9 +57,9 @@ h1 {
 .slider .slideHandle {
   width: 95px;
   height: 95px;
-  background: #4CAF50;
+  background: #347937;
   border-radius: 10px;
-  border-color: #347937;
+  border-color: #4CAF50;
   border-width: 2.5px;
   border-style: solid;
   cursor: pointer;
