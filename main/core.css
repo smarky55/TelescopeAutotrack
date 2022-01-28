@@ -8,15 +8,59 @@ h1 {
   color: darkgray;
 }
 
+/* Hide all but first tab */
+.tabContent > div:not(:first-child) {
+  display: none;
+}
+
+.tabContainer > .tabBar {
+  overflow: hidden;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+}
+
+.tabBar li {
+  float: left;
+  display: flex;
+  flex: 1;
+}
+
+.tabBar div {
+  position: relative;
+  background: #222;
+  border-top: 3px solid rgba(0,0,0,0);
+  padding: 1em .5em;
+  float: left;
+  text-decoration: none;
+  color: #888;
+  margin: 0 .1em 0 0;
+  font-size: 1em;
+  flex: 1;
+  transition: all .35s ease;
+  cursor: pointer;
+}
+.tabBar div.active {
+  border-top: 3px solid #347937;
+  color: #fff;
+  background: inherit;
+}
+.tabBar div:hover {
+  background: inherit;
+  color: #fff;
+}
+
 .buttonBox {
   display: flex;
   justify-content: space-between;
   margin-top: 20px;
 }
 
-.moveButton {
+.button {
   background-color: #347937;
-  border-radius: 10px;
+  border-radius: 3px;
   border-color: #4CAF50;
   border-width: 2.5px;
   border-style: solid;
@@ -26,12 +70,34 @@ h1 {
   justify-content: center;
   align-items: center;
   color: white;
+  cursor: pointer;
 }
 
-#stop {
+.stop {
   background-color: maroon;
   border-color: rgb(167, 0, 0);
   color: white;
+}
+
+.camButton {
+  width: 20%;
+  height: 100px;
+}
+
+#cam-scan {
+  width: 100%
+}
+
+#cam-device-list {
+  background-color: #111111;
+  padding: 5px;
+  list-style-type: none;
+}
+
+.cam-device-item {
+  height: 50px;
+  justify-content: center;
+  cursor: pointer;
 }
 
 .slidecontainer {

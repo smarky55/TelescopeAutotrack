@@ -7,7 +7,7 @@ function panControl(id, onUpdate) {
   var handleWidth = handle.offsetWidth;
   var value
 
-  range.addEventListener("mousedown", function (e) {
+  range.addEventListener("mousedown", e => {
     rangeWidth = this.offsetWidth;
     rangeLeft = this.offsetLeft;
     down = true;
@@ -16,17 +16,17 @@ function panControl(id, onUpdate) {
     return false;
   });
 
-  document.addEventListener("mousemove", function (e) {
+  document.addEventListener("mousemove", e => {
     e.preventDefault()
     updateHandle(e);
   })
 
-  document.addEventListener("mouseup", function (e) {
+  document.addEventListener("mouseup", () => {
     resetHandle();
     down = false;
   })
 
-  range.addEventListener("touchstart", function (e) {
+  range.addEventListener("touchstart", e => {
     rangeWidth = this.offsetWidth;
     rangeLeft = this.offsetLeft;
     let rangeHeight = this.offsetHeight;
@@ -40,12 +40,12 @@ function panControl(id, onUpdate) {
     return false;
   });
 
-  document.addEventListener("touchmove", function (e) {
+  document.addEventListener("touchmove", e => {
     e.preventDefault()
     updateHandle(e.changedTouches[0]);
   })
 
-  document.addEventListener("touchend", function () {
+  document.addEventListener("touchend", () => {
     resetHandle();
     down = false;
   })
@@ -72,37 +72,35 @@ function panControl(id, onUpdate) {
   resetHandle();
 }
 
-window.onload = function () {
-
-  // var slider = document.getElementById("slider");
-  var output = document.getElementById("output");
-
-  panControl("slider", function (val) {
-    output.innerHTML = val
-
-    const data = {
-      command: "speed",
-      value: (val * 2) - 100
-    };
-    fetch("/command", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(data)
-    });
-  });
-}
-
-function buttonClick(element) {
-  const data = { command: element.id };
-  fetch("/command", {
+function postCommand(data) {
+  return fetch("/command", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
     body: JSON.stringify(data)
   });
+}
+
+window.onload = function () {
+
+  // var slider = document.getElementById("slider");
+  var output = document.getElementById("output");
+
+  panControl("slider", val => {
+    output.innerHTML = val
+
+    const data = {
+      command: "speed",
+      value: (val * 2) - 100
+    };
+    postCommand(data);
+  });
+}
+
+function buttonClick(element) {
+  const data = { command: element.id };
+  postCommand(data);
 }
 
 function updateFields() {
@@ -112,12 +110,61 @@ function updateFields() {
       command: "update",
       trackRate: trackRateInp.valueAsNumber
     };
-    fetch("/command", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(data)
-    });
+    postCommand(data);
   }
+}
+
+function onTabClicked(tab) {
+  let tabBar = tab.closest(".tabBar");
+  tabBar.querySelectorAll("div").forEach((ele) => ele.classList.remove("active"));
+  tab.classList.add("active");
+
+  let tabContainer = tabBar.closest(".tabContainer")
+  tabContainer.querySelectorAll(".tabContent > div").forEach((ele) => ele.style.display = "none");
+  tabContainer.querySelector(".tabContent > div#" + tab.id).style.display = "block";
+}
+
+var scanInterval = null;
+
+function pollScan() {
+  postCommand({ command: "cam-list" })
+    .then(resp => {
+      if (!resp.ok) {
+        throw new Error(resp)
+      }
+      return resp.json();
+    })
+    .then(data => {
+      if (data.scanning == false) {
+        clearInterval(scanInterval);
+      }
+      const lis = data.items.map(item => {
+        const li = document.createElement("li");
+        li.className = "cam-device-item";
+        li.appendChild(document.createTextNode(item.name));
+        li.onclick = connectToDevice.bind(null, item.address);
+        return li;
+      });
+      document.getElementById("cam-device-list").replaceChildren(...lis);
+    })
+    .catch(error => {
+      console.error(error);
+      clearInterval(scanInterval);
+    });
+}
+
+function beginScan() {
+  // Send scan start command
+  const data = { command: "cam-scan" };
+  postCommand(data);
+
+  scanInterval = setInterval(pollScan, 1000);
+}
+
+function connectToDevice(address) {
+  const data = {
+    command: "cam-connect",
+    address
+  }
+  postCommand(data);
 }

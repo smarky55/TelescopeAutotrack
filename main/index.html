@@ -9,24 +9,52 @@
 </head>
 
 <body>
-  <div class="slidecontainer">
-    <div class="slider" id="slider">
-      <div class="slideHandle"></div>
-    </div>
-  </div>
-  <div class="buttonBox">
-    <div></div>
-    <div>
-      <label for="trackRate">Tracking Rate</label>
-      <input type="number" autocomplete="off" id="trackRate" value="4167"></input>
-      <button onclick="updateFields()">Update</button>
-    </div>
-    <div id="track" class="moveButton" onclick="buttonClick(this)">Track</div>
-    <div id="stop" class="moveButton" onclick="buttonClick(this)">Stop</div>
-    <div></div>
-  </div>
+  <div class="tabContainer">
+    <ul class="tabBar">
+      <li>
+        <div id="tracking" class="active" onclick="onTabClicked(this)">Tracking</div>
+      </li>
+      <li>
+        <div id="intervalometer" onclick="onTabClicked(this)">Intervalometer</div>
+      </li>
+    </ul>
+    <div class="tabContent">
+      <div id="tracking">
+        <div class="slidecontainer">
+          <div class="slider" id="slider">
+            <div class="slideHandle"></div>
+          </div>
+        </div>
+        <div class="buttonBox">
+          <div></div>
+          <div>
+            <label for="trackRate">Tracking Rate</label>
+            <input type="number" autocomplete="off" id="trackRate" value="4167"></input>
+            <button onclick="updateFields()">Update</button>
+          </div>
+          <div id="track" class="button" onclick="buttonClick(this)">Track</div>
+          <div id="stop" class="button stop" onclick="buttonClick(this)">Stop</div>
+          <div></div>
+        </div>
+        <div id="output">50</div>
+      </div>
 
-  <div id="output">50</div>
+      <div id="intervalometer">
+        <div id="cam-connection">
+          <div>
+            <div id="cam-scan" class="button camButton" onclick="beginScan()">Scan</div>
+          </div>
+          <ul id="cam-device-list">
+
+          </ul>
+        </div>
+        <div id="cam-settings" style="display:none">
+          <div id="cam-trigger" class="button camButton" onclick="buttonClick(this)">Trigger</div>
+          <div id="cam-run-stop" class="button camButton" onclick="buttonClick(this)">Start</div>
+        </div>
+      </div>
+    </div>
+  </div>
 </body>
 
 </html>
