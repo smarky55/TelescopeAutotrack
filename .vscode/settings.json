@@ -48,7 +48,11 @@
         "stdexcept": "cpp",
         "streambuf": "cpp",
         "cinttypes": "cpp",
-        "typeinfo": "cpp"
+        "typeinfo": "cpp",
+        "xstring": "cpp",
+        "list": "cpp",
+        "unordered_set": "cpp",
+        "map": "cpp"
     },
     "idf.portWin": "COM3",
     "idf.flashType": "UART",
