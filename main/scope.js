@@ -161,10 +161,51 @@ function beginScan() {
   scanInterval = setInterval(pollScan, 1000);
 }
 
+function toggleIntervalometer(showSetting){
+  const connection = document.getElementById("cam-connection");
+  const settings = document.getElementById("cam-settings");
+  if (showSetting) {
+    connection.style.display = "none";
+    settings.style.display = "block";
+  } else {
+    connection.style.display = "block";
+    settings.style.display = "none";
+  }
+}
+
+function refreshConnection() {
+  const data = {
+    command: "cam-refresh"
+  };
+  postCommand(data)
+  .then(resp=> {
+    if (!resp.ok) {
+      throw new Error(resp);
+    }
+    return resp.json();
+  })
+  .then(data => {
+    toggleIntervalometer(data.connected);
+  })
+  .catch(error => console.error(error));
+}
+
 function connectToDevice(address) {
   const data = {
     command: "cam-connect",
     address
   }
-  postCommand(data);
+  postCommand(data)
+  .then(resp => {
+    if (!resp.ok) {
+      throw new Error(resp);
+    }
+    return resp.json();
+  })
+  .then(data => {
+    if (data.connected) {
+      toggleIntervalometer(true);
+    }
+  })
+  .catch(error => console.error(error));
 }
