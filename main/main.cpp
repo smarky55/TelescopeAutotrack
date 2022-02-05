@@ -46,6 +46,30 @@ static const char* TAG = "telescope";
 //   }
 // }
 
+class json_ptr {
+ public:
+  json_ptr() : m_ptr(nullptr) {}
+
+  json_ptr(cJSON* ptr) : m_ptr(ptr) {}
+
+  ~json_ptr() {
+    if (m_ptr){
+      cJSON_Delete(m_ptr);
+    }
+  }
+
+  cJSON* get() {
+    return m_ptr;
+  }
+
+  operator bool() const {
+    return m_ptr;
+  }
+
+ private:
+  cJSON* m_ptr;
+};
+
 static void tmcStepperTask(void* arg) {
   Telescope* scope = static_cast<Telescope*>(arg);
   scope->tick();  // Get the first dud out the way
@@ -130,14 +154,13 @@ void my_main(void) {
       return ESP_FAIL;
     }
 
-    cJSON* json = cJSON_Parse(buf);
+    json_ptr json = cJSON_Parse(buf);
     if (!json) {
       return httpd_resp_send_err(request, HTTPD_400_BAD_REQUEST, NULL);
     }
 
-    cJSON* command = cJSON_GetObjectItem(json, "command");
+    cJSON* command = cJSON_GetObjectItem(json.get(), "command");
     if (!command) {
-      cJSON_Delete(json);
       return httpd_resp_send_err(request, HTTPD_400_BAD_REQUEST, NULL);
     }
     ESP_LOGI(TAG, "Command %s", command->valuestring);
@@ -147,16 +170,14 @@ void my_main(void) {
       scope.setTracking(false);
       scope.setTargetRASpeed(0);
     } else if (strcmp(command->valuestring, "speed") == 0) {
-      cJSON* value = cJSON_GetObjectItem(json, "value");
+      cJSON* value = cJSON_GetObjectItem(json.get(), "value");
       if (!value) {
-        cJSON_Delete(json);
         return httpd_resp_send_err(request, HTTPD_400_BAD_REQUEST, NULL);
       }
       scope.setTargetRASpeed(value->valueint * 0.01);  // Range -1 <-> 1
     } else if (strcmp(command->valuestring, "update") == 0) {
-      cJSON* trackRate = cJSON_GetObjectItem(json, "trackRate");
+      cJSON* trackRate = cJSON_GetObjectItem(json.get(), "trackRate");
       if (!trackRate) {
-        cJSON_Delete(json);
         return httpd_resp_send_err(request, HTTPD_400_BAD_REQUEST, NULL);
       }
       scope.setTrackRate(trackRate->valueint);
@@ -164,9 +185,9 @@ void my_main(void) {
       camera.getScan()->start(5);
     } else if (strcmp(command->valuestring, "cam-list") == 0) {
       httpd_resp_set_type(request, HTTPD_TYPE_JSON);
-      cJSON* resp = cJSON_CreateObject();
-      cJSON_AddBoolToObject(resp, "scanning", camera.getScan()->isScanning());
-      cJSON* items = cJSON_AddArrayToObject(resp, "items");
+      json_ptr resp = cJSON_CreateObject();
+      cJSON_AddBoolToObject(resp.get(), "scanning", camera.getScan()->isScanning());
+      cJSON* items = cJSON_AddArrayToObject(resp.get(), "items");
       for (auto* device : camera.getScan()->devices()) {
         cJSON* item = cJSON_CreateObject();
         cJSON_AddStringToObject(item, "address",
@@ -176,25 +197,20 @@ void my_main(void) {
                                 device->getManufacturerData().c_str());
         cJSON_AddItemToArray(items, item);
       }
-      std::string respStr(cJSON_PrintUnformatted(resp));
-      cJSON_Delete(resp);
-      cJSON_Delete(json);
+      std::string respStr(cJSON_PrintUnformatted(resp.get()));
       return httpd_resp_send(request, respStr.c_str(), HTTPD_RESP_USE_STRLEN);
     } else if (strcmp(command->valuestring, "cam-connect") == 0) {
-      cJSON* address = cJSON_GetObjectItem(json, "address");
+      cJSON* address = cJSON_GetObjectItem(json.get(), "address");
       if (!address) {
-        cJSON_Delete(json);
         return httpd_resp_send_err(request, HTTPD_400_BAD_REQUEST, NULL);
       }
       camera.pair(std::string(address->valuestring));
     } else if (strcmp(command->valuestring, "cam-trigger") == 0) {
       camera.trigger();
     } else {
-      cJSON_Delete(json);
       return httpd_resp_send_err(request, HTTPD_400_BAD_REQUEST, NULL);
     }
 
-    cJSON_Delete(json);
     return httpd_resp_send(request, nullptr, 0);
   });
 
