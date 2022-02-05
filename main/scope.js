@@ -209,3 +209,43 @@ function connectToDevice(address) {
     })
     .catch(error => console.error(error));
 }
+
+var isSequenceInProgress = false;
+
+function startSequence(ele) {
+  const durInput = document.getElementById("cam-duration");
+  const intInput = document.getElementById("cam-interval");
+  const cntInput = document.getElementById("cam-count");
+  const data = {
+    command: "cam-seq-start",
+    duration: durInput.valueAsNumber,
+    interval: intInput.valueAsNumber,
+    count: cntInput.valueAsNumber
+  };
+  postCommand(data);
+
+  ele.classList.add("stop");
+  ele.textContent = "Stop";
+
+  isSequenceInProgress = true;
+}
+
+function stopSequence(ele) {
+  const data = {
+    command: "cam-seq-stop"
+  };
+  postCommand(data);
+
+  ele.classList.remove("stop");
+  ele.textContent = "Start";
+
+  isSequenceInProgress = false;
+}
+
+function toggleSequence(ele) {
+  if (isSequenceInProgress) {
+    stopSequence(ele);
+  } else {
+    startSequence(ele);
+  }
+}

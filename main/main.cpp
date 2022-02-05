@@ -20,6 +20,7 @@
 #include "uartStream.hpp"
 
 #include <CanonM50/CanonM50.hpp>
+#include <CanonM50/IntervalometerTask.hpp>
 #include <CanonM50/Scan.hpp>
 
 #define MILLIS 1000
@@ -116,6 +117,9 @@ void my_main(void) {
   CanonM50 camera("ESP32-Telescope");
   camera.init();
 
+  IntervalometerTask intervalTask;
+  intervalTask.begin(2048, 10);
+
   // xTaskCreate(uart_printer, "uart_echo", 2048, nullptr, 10, nullptr);
   vTaskDelay(100);
   stepper.defaults();
@@ -137,7 +141,8 @@ void my_main(void) {
   Telescope scope(&stepper, 1);
   xTaskCreate(tmcStepperTask, "telescopeTask", 2048, &scope, 10, nullptr);
 
-  webserverSetCommandCallback([&scope, &camera](httpd_req_t* request) {
+  webserverSetCommandCallback([&scope, &camera,
+                               &intervalTask](httpd_req_t* request) {
     char buf[100];
     int ret, remaining = request->content_len;
 
@@ -217,6 +222,17 @@ void my_main(void) {
 
       std::string respStr(cJSON_PrintUnformatted(resp.get()));
       return httpd_resp_send(request, respStr.c_str(), HTTPD_RESP_USE_STRLEN);
+    } else if (strcmp(command->valuestring, "cam-seq-start") == 0) {
+      cJSON* duration = cJSON_GetObjectItem(json.get(), "duration");
+      cJSON* interval = cJSON_GetObjectItem(json.get(), "interval");
+      cJSON* count = cJSON_GetObjectItem(json.get(), "count");
+      if (!duration || !interval || !count) {
+        return httpd_resp_send_err(request, HTTPD_400_BAD_REQUEST, NULL);
+      }
+      intervalTask.runSequence(&camera, duration->valuedouble * 1000,
+                               interval->valuedouble * 1000, count->valueint);
+    } else if (strcmp(command->valuestring, "cam-seq-stop") == 0) {
+      intervalTask.abortSequence();
     } else {
       return httpd_resp_send_err(request, HTTPD_400_BAD_REQUEST, NULL);
     }

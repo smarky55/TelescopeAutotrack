@@ -5,7 +5,7 @@
             "includePath": [
                 "${workspaceRoot}",
                 "${workspaceRoot}/components/CanonM50/include",
-                "${workspaceRoot}/components/rest/include",
+                // "${workspaceRoot}/components/rest/include",
                 "${workspaceRoot}/components/esp-nimble-cpp/src",
                 "${workspaceRoot}/components/smk_wifi/include",
                 "${workspaceRoot}/components/TMCStepper/src",
