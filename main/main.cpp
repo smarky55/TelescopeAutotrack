@@ -53,18 +53,14 @@ class json_ptr {
   json_ptr(cJSON* ptr) : m_ptr(ptr) {}
 
   ~json_ptr() {
-    if (m_ptr){
+    if (m_ptr) {
       cJSON_Delete(m_ptr);
     }
   }
 
-  cJSON* get() {
-    return m_ptr;
-  }
+  cJSON* get() { return m_ptr; }
 
-  operator bool() const {
-    return m_ptr;
-  }
+  operator bool() const { return m_ptr; }
 
  private:
   cJSON* m_ptr;
@@ -186,7 +182,8 @@ void my_main(void) {
     } else if (strcmp(command->valuestring, "cam-list") == 0) {
       httpd_resp_set_type(request, HTTPD_TYPE_JSON);
       json_ptr resp = cJSON_CreateObject();
-      cJSON_AddBoolToObject(resp.get(), "scanning", camera.getScan()->isScanning());
+      cJSON_AddBoolToObject(resp.get(), "scanning",
+                            camera.getScan()->isScanning());
       cJSON* items = cJSON_AddArrayToObject(resp.get(), "items");
       for (auto* device : camera.getScan()->devices()) {
         cJSON* item = cJSON_CreateObject();
@@ -204,9 +201,22 @@ void my_main(void) {
       if (!address) {
         return httpd_resp_send_err(request, HTTPD_400_BAD_REQUEST, NULL);
       }
-      camera.pair(std::string(address->valuestring));
+
+      bool connected = camera.pair(std::string(address->valuestring));
+
+      json_ptr resp = cJSON_CreateObject();
+      cJSON_AddBoolToObject(resp.get(), "connected", connected);
+
+      std::string respStr(cJSON_PrintUnformatted(resp.get()));
+      return httpd_resp_send(request, respStr.c_str(), HTTPD_RESP_USE_STRLEN);
     } else if (strcmp(command->valuestring, "cam-trigger") == 0) {
       camera.trigger();
+    } else if (strcmp(command->valuestring, "cam-refresh") == 0) {
+      json_ptr resp = cJSON_CreateObject();
+      cJSON_AddBoolToObject(resp.get(), "connected", camera.isConnected());
+
+      std::string respStr(cJSON_PrintUnformatted(resp.get()));
+      return httpd_resp_send(request, respStr.c_str(), HTTPD_RESP_USE_STRLEN);
     } else {
       return httpd_resp_send_err(request, HTTPD_400_BAD_REQUEST, NULL);
     }
