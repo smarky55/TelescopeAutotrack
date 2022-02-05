@@ -25,23 +25,21 @@
             <div class="slideHandle"></div>
           </div>
         </div>
+        <div>
+          <label for="trackRate">Tracking Rate</label>
+          <input type="number" autocomplete="off" id="trackRate" value="4167"></input>
+          <button onclick="updateFields()">Update</button>
+        </div>
         <div class="buttonBox">
-          <div></div>
-          <div>
-            <label for="trackRate">Tracking Rate</label>
-            <input type="number" autocomplete="off" id="trackRate" value="4167"></input>
-            <button onclick="updateFields()">Update</button>
-          </div>
           <div id="track" class="button" onclick="buttonClick(this)">Track</div>
           <div id="stop" class="button stop" onclick="buttonClick(this)">Stop</div>
-          <div></div>
         </div>
         <div id="output">50</div>
       </div>
 
       <div id="intervalometer">
         <div id="cam-connection">
-          <div>
+          <div id="cam-conn-buttons" class="buttonBox">
             <div id="cam-scan" class="button camButton" onclick="beginScan()">Scan</div>
             <div id="cam-refresh" class="button camButton">Refresh</div>
           </div>
@@ -50,8 +48,24 @@
           </ul>
         </div>
         <div id="cam-settings" style="display:none">
-          <div id="cam-trigger" class="button camButton" onclick="buttonClick(this)">Trigger</div>
-          <div id="cam-run-stop" class="button camButton" onclick="buttonClick(this)">Start</div>
+          <form class="settings-form">
+            <div class="settings">
+                <label for="cam-duration">Duration</label>
+                <input type="number" autocomplete="off" id="cam-duration" value="1" />
+            </div>
+            <div class="settings">
+                <label for="cam-interval">Interval</label>
+                <input type="number" autocomplete="off" id="cam-interval" value="1" />
+            </div>
+            <div class="settings">
+                <label for="cam-count">Count</label>
+                <input type="number" autocomplete="off" id="cam-count" value="1"/>
+            </div>
+          </form>
+          <div class="buttonBox">
+            <div id="cam-run-stop" class="button camButton" onclick="buttonClick(this)">Start</div>
+            <div id="cam-trigger" class="button camButton" onclick="buttonClick(this)">Trigger</div>
+          </div>
         </div>
       </div>
     </div>
